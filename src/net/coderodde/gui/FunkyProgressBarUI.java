@@ -3,6 +3,7 @@ package net.coderodde.gui;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.GridLayout;
 import java.awt.Toolkit;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
@@ -98,32 +99,12 @@ public class FunkyProgressBarUI extends ProgressBarUI {
         final int width = (int)((WIDTH - 2 * borderThickness) * 
                                  percentageReady / 2.0);
         
-        System.out.println(width);
-        System.out.println(percentageReady);
-        
-        //// Draw the actual bar.
+        //// Draw the bar and more.
         g.setColor(barColor);
-        
-        if (percentageReady == 1.0) {
-            // Make sure that if the width of the bar area is odd, everything is
-            // painted. If you did not do this, you would see at 100% a 1 pixel
-            // vertical line at the centre of the component.
-            g.fillRect(borderThickness,
-                       borderThickness,
-                       WIDTH - 2 * borderThickness,
-                       HEIGHT - 2 * borderThickness);
-        } else {
-            // Left bar.
-            g.fillRect(borderThickness, 
-                       borderThickness, 
-                       width, 
-                       HEIGHT - 2 * borderThickness);
-            // Right bar.
-            g.fillRect(WIDTH - borderThickness - width,
-                       borderThickness,
-                       width,
-                       HEIGHT - 2 * borderThickness);
-        }
+        g.fillRect(borderThickness,
+                   borderThickness,
+                   WIDTH - 2 * borderThickness,
+                   HEIGHT - 2 * borderThickness);
         
         //// Fill the exposed background.
         if (percentageReady < 1.0) {
@@ -136,21 +117,30 @@ public class FunkyProgressBarUI extends ProgressBarUI {
     }
     
     public static void main(String[] args) {
+        final int MIN_VALUE = 0;
+        final int MAX_VALUE = 100;
+        final int AVERAGE = (MIN_VALUE + MAX_VALUE) >>> 1;
+        
         final JFrame frame = new JFrame("FunkyProgressBarUI");
-        final JProgressBar bar1 = new JProgressBar(0, 100);
-        final JProgressBar bar2 = new JProgressBar(0, 100);
-        final JSlider slider = new JSlider(0, 100, 50);
+        final JProgressBar bar1 = new JProgressBar(MIN_VALUE, MAX_VALUE);
+        final JProgressBar bar2 = new JProgressBar(MIN_VALUE, MAX_VALUE);
+        final JSlider slider = new JSlider(MIN_VALUE, MAX_VALUE, AVERAGE);
         final Dimension dim = new Dimension(301, 70);
         final ProgressBarUI ui = new FunkyProgressBarUI();
+        final GridLayout layout = new GridLayout(3, 1, 10, 10);
         
-        slider.addChangeListener(new MySliderChangeListener(bar1));
+        slider.addChangeListener(new MySliderChangeListener(bar2));
+        
         bar1.setPreferredSize(dim);
         bar2.setPreferredSize(dim);
+        bar2.setValue(slider.getValue());
         
         bar1.setUI(ui);
         bar2.setUI(ui);
         
+        frame.setLayout(layout);
         frame.add(bar1);
+        frame.add(slider);
         frame.add(bar2);
         frame.pack();
         
@@ -175,8 +165,9 @@ public class FunkyProgressBarUI extends ProgressBarUI {
         }
         
         @Override
-        public void stateChanged(ChangeEvent e) {
-            
+        public void stateChanged(final ChangeEvent e) {
+            bar.setValue(((JSlider) e.getSource()).getValue());
+            bar.repaint();
         }
     }
     
