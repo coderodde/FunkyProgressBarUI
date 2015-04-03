@@ -179,28 +179,38 @@ public class FunkyProgressBarUI extends ProgressBarUI {
                      (int)((HEIGHT + rect.getHeight() - fm.getAscent()) / 2));
     }
     
-    public static void main(String[] args) {
+    /**
+     * The entry point to the demo program.
+     * 
+     * @param args ignored.
+     */
+    public static void main(final String... args) {
         final int MIN_VALUE = 0;
         final int MAX_VALUE = 100;
         final int AVERAGE = (MIN_VALUE + MAX_VALUE) >>> 1;
         
+        // Create all the GUI components.
         final JFrame frame = new JFrame("FunkyProgressBarUI");
         final JProgressBar bar1 = new JProgressBar(MIN_VALUE, MAX_VALUE);
         final JProgressBar bar2 = new JProgressBar(MIN_VALUE, MAX_VALUE);
         final JSlider slider = new JSlider(MIN_VALUE, MAX_VALUE, AVERAGE);
         final Dimension dim = new Dimension(301, 70);
-        final ProgressBarUI ui = new FunkyProgressBarUI();
+        final FunkyProgressBarUI ui = new FunkyProgressBarUI();
         final GridLayout layout = new GridLayout(3, 1, 10, 10);
         
+        // Let slider to modify the second progress bar.
         slider.addChangeListener(new MySliderChangeListener(bar2));
         
+        // Prepare the bars.
         bar1.setPreferredSize(dim);
         bar2.setPreferredSize(dim);
         bar2.setValue(slider.getValue());
         
+        // Make them Funky.
         bar1.setUI(ui);
         bar2.setUI(ui);
         
+        // Constructing the GUI.
         frame.setLayout(layout);
         frame.add(bar1);
         frame.add(slider);
@@ -209,12 +219,15 @@ public class FunkyProgressBarUI extends ProgressBarUI {
         
         final Dimension screenDim = Toolkit.getDefaultToolkit().getScreenSize();
         
+        // Move the frame to the center of the screen.
         frame.setLocation((screenDim.width - frame.getWidth()) / 2,
                           (screenDim.height - frame.getHeight()) / 2);
         
+        // Almost ready.
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setVisible(true);
         
+        // Let the thread do its job.
         new UpdateThread(bar1, 3, 100L).start();
     }
     
@@ -259,13 +272,38 @@ public class FunkyProgressBarUI extends ProgressBarUI {
      */
     private static final class UpdateThread extends Thread {
         
+        /**
+         * The minimum difference in the <code>bar</code>'s value.
+         */
         private static final int MINIMUM_STEP = 1;
+        
+        /**
+         * The minimum sleeping duration in milliseconds.
+         */
         private static final long MINIMUM_SLEEP_DURATION = 10L;
         
+        /**
+         * The {@link javax.swing.JProgressBar} to modify.
+         */
         private final JProgressBar bar;
+        
+        /**
+         * The amount by which the value <code>bar</code> is changed.
+         */
         private final int step;
+        
+        /**
+         * The duration of sleeping in milliseconds.
+         */
         private final long sleepDuration;
         
+        /**
+         * Constructs a new update thread.
+         * 
+         * @param bar           the target <code>JProgressBar</code>.
+         * @param step          the step to use.
+         * @param sleepDuration the sleep duration.
+         */
         UpdateThread(final JProgressBar bar, 
                      final int step,
                      final long sleepDuration) {
@@ -276,7 +314,7 @@ public class FunkyProgressBarUI extends ProgressBarUI {
         }
         
         /**
-         * The entry point to this thread.
+         * The entry point into this thread.
          */
         @Override
         public void run() {
@@ -306,6 +344,12 @@ public class FunkyProgressBarUI extends ProgressBarUI {
             }
         }
         
+        /**
+         * Attempts to sleep the calling thread for <code>milliseconds</code>
+         * milliseconds.
+         * 
+         * @param milliseconds the duration of a sleep.
+         */
         private static final void trySleep(final long milliseconds) {
             try {
                 Thread.sleep(milliseconds);
