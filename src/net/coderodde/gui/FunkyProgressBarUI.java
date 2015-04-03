@@ -2,9 +2,12 @@ package net.coderodde.gui;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.GridLayout;
 import java.awt.Toolkit;
+import java.awt.geom.Rectangle2D;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JProgressBar;
@@ -21,28 +24,76 @@ import javax.swing.plaf.ProgressBarUI;
  */
 public class FunkyProgressBarUI extends ProgressBarUI {
 
-    
+    /**
+     * The default background color.
+     */
     private static final Color DEFAULT_BACKGROUND_COLOR = Color.DARK_GRAY;
+    
+    /**
+     * The default border color.
+     */
     private static final Color DEFAULT_BORDER_COLOR = Color.RED;
-    private static final Color DEFAULT_NUMBER_COLOR = Color.BLACK;
+    
+    /**
+     * The default progress bar color.
+     */
     private static final Color DEFAULT_BAR_COLOR = Color.PINK;
     
-    private static final int MINIMUM_BORDER_THICKNESS = 1;
+    /**
+     * The minimum border thickness in pixels.
+     */
+    private static final int MINIMUM_BORDER_THICKNESS = 0;
+    
+    /**
+     * The maximum border thickness in pixels.
+     */
     private static final int MAXIMUM_BORDER_THICKNESS = 10;
+    
+    /**
+     * The default border thickness in pixels.
+     */
     private static final int DEFAULT_BORDER_THICKNESS = 4;
     
+    /**
+     * The default font for drawing the percentage.
+     */
+    private static final Font DEFAULT_FONT = new Font("Arial", Font.BOLD, 24); 
+    
+    /**
+     * The background color.
+     */
     private Color backgroundColor;
+    
+    /**
+     * The border color.
+     */
     private Color borderColor;
-    private Color numberColor;
+    
+    /**
+     * The progress bar color.
+     */
     private Color barColor;
+    
+    /**
+     * The thickness of the border in pixels.
+     */
     private int borderThickness;
     
+    /**
+     * The font for drawing percentage.
+     */
+    private Font font;
+    
+    /**
+     * Creates a new UI for a {@link javax.swing.JProgressBar} with default
+     * attributes.
+     */
     public FunkyProgressBarUI() {
         setBackgroundColor(DEFAULT_BACKGROUND_COLOR);
         setBorderColor(DEFAULT_BORDER_COLOR);
-        setNumberColor(DEFAULT_NUMBER_COLOR);
         setBarColor(DEFAULT_BAR_COLOR);
         setBorderThickness(DEFAULT_BORDER_THICKNESS);
+        setFont(DEFAULT_FONT);
     }
     
     public void setBackgroundColor(final Color backgroundColor) {
@@ -53,10 +104,6 @@ public class FunkyProgressBarUI extends ProgressBarUI {
         this.borderColor = borderColor;
     }
     
-    public void setNumberColor(final Color numberColor) {
-        this.numberColor = numberColor;
-    }
-    
     public void setBarColor(final Color barColor) {
         this.barColor = barColor;
     }
@@ -65,6 +112,10 @@ public class FunkyProgressBarUI extends ProgressBarUI {
         this.borderThickness = Math.max(MINIMUM_BORDER_THICKNESS, 
                                         Math.min(MAXIMUM_BORDER_THICKNESS, 
                                                  thickness));
+    }
+    
+    public void setFont(final Font font) {
+        this.font = font;
     }
     
     @Override
@@ -114,6 +165,18 @@ public class FunkyProgressBarUI extends ProgressBarUI {
                        WIDTH - 2 * borderThickness - 2 * width,
                        HEIGHT - 2 * borderThickness);
         }
+        
+        g.setFont(font);
+        g.setColor(backgroundColor);
+        g.setXORMode(barColor);
+        
+        final FontMetrics fm = g.getFontMetrics(font);
+        final String str = "" + (int)(100 * percentageReady) + "%";
+        final Rectangle2D rect = fm.getStringBounds(str, g);
+        
+        g.drawString(str, 
+                     (int)((WIDTH - rect.getWidth()) / 2),
+                     (int)((HEIGHT + rect.getHeight() - fm.getAscent()) / 2));
     }
     
     public static void main(String[] args) {
@@ -155,15 +218,32 @@ public class FunkyProgressBarUI extends ProgressBarUI {
         new UpdateThread(bar1, 3, 100L).start();
     }
     
+    /**
+     * Listens to the changes in a {@link javax.swing.JSlider} and updates a
+     * {@link javax.swing.JProgressBar}.
+     */
     private static final class MySliderChangeListener 
     implements ChangeListener {
 
+        /**
+         * The target <code>JProgressBar</code> to update.
+         */
         private final JProgressBar bar;
 
+        /**
+         * Constructs a new listener with given target.
+         * 
+         * @param bar the target <code>JProgressBar</code>.
+         */
         public MySliderChangeListener(final JProgressBar bar) {
             this.bar = bar;
         }
         
+        /**
+         * Updates the target <code>JProgressBar</code>.
+         * 
+         * @param e the event.
+         */
         @Override
         public void stateChanged(final ChangeEvent e) {
             bar.setValue(((JSlider) e.getSource()).getValue());
@@ -171,6 +251,12 @@ public class FunkyProgressBarUI extends ProgressBarUI {
         }
     }
     
+    /**
+     * This thread modifies the value of a {@link javax.swing.JProgressBar}. It
+     * increases the value of a bar to its maximum, after which it starts to 
+     * decrease it. Once the minimum value is attained, this thread begins to
+     * increase it, and so on.
+     */
     private static final class UpdateThread extends Thread {
         
         private static final int MINIMUM_STEP = 1;
@@ -189,6 +275,9 @@ public class FunkyProgressBarUI extends ProgressBarUI {
                                           MINIMUM_SLEEP_DURATION);
         }
         
+        /**
+         * The entry point to this thread.
+         */
         @Override
         public void run() {
             boolean increase = true;
