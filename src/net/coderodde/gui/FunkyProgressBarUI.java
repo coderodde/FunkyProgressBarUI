@@ -6,6 +6,7 @@ import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.GridLayout;
+import java.awt.Insets;
 import java.awt.Toolkit;
 import java.awt.geom.Rectangle2D;
 import javax.swing.JComponent;
@@ -23,21 +24,6 @@ import javax.swing.plaf.ProgressBarUI;
  * @version 1.6
  */
 public class FunkyProgressBarUI extends ProgressBarUI {
-
-    /**
-     * The default background color.
-     */
-    private static final Color DEFAULT_BACKGROUND_COLOR = Color.DARK_GRAY;
-
-    /**
-     * The default border color.
-     */
-    private static final Color DEFAULT_BORDER_COLOR = Color.RED;
-
-    /**
-     * The default progress bar color.
-     */
-    private static final Color DEFAULT_BAR_COLOR = Color.PINK;
 
     /**
      * The minimum border thickness in pixels.
@@ -61,21 +47,6 @@ public class FunkyProgressBarUI extends ProgressBarUI {
     private static final float MAXIMUM_LENGTH_FACTOR = 0.85f;
 
     /**
-     * The background color.
-     */
-    private Color backgroundColor;
-
-    /**
-     * The border color.
-     */
-    private Color borderColor;
-
-    /**
-     * The progress bar color.
-     */
-    private Color barColor;
-
-    /**
      * The thickness of the border in pixels.
      */
     private int borderThickness;
@@ -85,22 +56,7 @@ public class FunkyProgressBarUI extends ProgressBarUI {
      * attributes.
      */
     public FunkyProgressBarUI() {
-        setBackgroundColor(DEFAULT_BACKGROUND_COLOR);
-        setBorderColor(DEFAULT_BORDER_COLOR);
-        setBarColor(DEFAULT_BAR_COLOR);
         setBorderThickness(DEFAULT_BORDER_THICKNESS);
-    }
-
-    public void setBackgroundColor(final Color backgroundColor) {
-        this.backgroundColor = backgroundColor;
-    }
-
-    public void setBorderColor(final Color borderColor) {
-        this.borderColor = borderColor;
-    }
-
-    public void setBarColor(final Color barColor) {
-        this.barColor = barColor;
     }
 
     public void setBorderThickness(final int thickness) {
@@ -118,7 +74,10 @@ public class FunkyProgressBarUI extends ProgressBarUI {
     public void update(final Graphics g, final JComponent component) {
         final int WIDTH = component.getWidth();
         final int HEIGHT = component.getHeight();
-        
+        final Color foregroundColor = component.getForeground();
+        final Color backgroundColor = component.getBackground();
+        final Color borderColor = getAverageColor(foregroundColor,
+                                                  backgroundColor);
         //// Draw the border.
         g.setColor(borderColor);
         // Upper horizontal border.
@@ -142,7 +101,7 @@ public class FunkyProgressBarUI extends ProgressBarUI {
                                  percentageReady / 2.0);
 
         //// Draw the bar and more.
-        g.setColor(barColor);
+        g.setColor(foregroundColor);
         g.fillRect(borderThickness,
                    borderThickness,
                    WIDTH - 2 * borderThickness,
@@ -165,7 +124,7 @@ public class FunkyProgressBarUI extends ProgressBarUI {
 
         g.setFont(checkFont(g, component));
         g.setColor(backgroundColor);
-        g.setXORMode(barColor);
+        g.setXORMode(foregroundColor);
         g.drawString(str, 
                      (WIDTH - stringWidth) / 2, 
                      ((HEIGHT + stringHeight) / 2) - fm.getDescent());
@@ -236,6 +195,8 @@ public class FunkyProgressBarUI extends ProgressBarUI {
         slider.addChangeListener(new MySliderChangeListener(bar2));
 
         // Prepare the bars.
+        bar1.setForeground(Color.GREEN);
+        bar1.setBackground(Color.BLACK);
         bar1.setPreferredSize(dim);
         bar2.setPreferredSize(dim);
         bar2.setValue(slider.getValue());
@@ -265,6 +226,18 @@ public class FunkyProgressBarUI extends ProgressBarUI {
 
         // Let the thread do its job.
         new UpdateThread(bar1, 3, 100L).start();
+    }
+
+    private Color getAverageColor(final Color color1, 
+                                  final Color color2) {
+        
+        return new Color(ave(color1.getRed(), color2.getRed()),
+                         ave(color1.getGreen(), color2.getGreen()),
+                         ave(color1.getBlue(), color2.getBlue()));
+    }
+    
+    private int ave(final int i, final int j) {
+        return (i + j) / 2;
     }
 
     /**
