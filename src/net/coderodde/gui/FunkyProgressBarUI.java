@@ -5,8 +5,9 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.GridLayout;
-import java.awt.Insets;
+import java.awt.RenderingHints;
 import java.awt.Toolkit;
 import java.awt.geom.Rectangle2D;
 import javax.swing.JComponent;
@@ -116,6 +117,12 @@ public class FunkyProgressBarUI extends ProgressBarUI {
                        HEIGHT - 2 * borderThickness);
         }
 
+        final Graphics2D g2 = (Graphics2D) g;
+        
+        g2.setRenderingHint(
+        RenderingHints.KEY_TEXT_ANTIALIASING,
+        RenderingHints.VALUE_TEXT_ANTIALIAS_LCD_HRGB);
+        
         final Font font = checkFont(g, component);
         final FontMetrics fm = g.getFontMetrics(font);
         final String str = "" + (int)(100 * percentageReady) + "%";
@@ -200,9 +207,9 @@ public class FunkyProgressBarUI extends ProgressBarUI {
         bar1.setPreferredSize(dim);
         bar2.setPreferredSize(dim);
         bar2.setValue(slider.getValue());
-        bar1.setFont(new Font("Times New Roman", Font.ITALIC, 40));
-        bar2.setFont(new Font("Verdana", Font.BOLD, 25));
-
+        bar1.setFont(new Font("Times New Roman", Font.ITALIC, 100));
+        bar2.setFont(new Font("Verdana", Font.BOLD, 100));
+        
         // Make them Funky.
         bar1.setUI(ui);
         bar2.setUI(ui);
